@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — TeaShop</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Стили авторизации -->
+  <link rel="stylesheet" href="../css/auth.css">
+
+  <!-- Логика профиля -->
+  <script type="module" src="../js/auth/profile.js"></script>
+</head>
+<body>
+
+  <!-- Шапка сайта с навигацией -->
+  <header id="site-header">
+    <a href="/" class="logo">TeaShop</a>
+
+    <!-- Навигация для гостей -->
+    <nav id="guest-nav">
+      <a href="login.html">Вход</a>
+      <a href="register.html">Регистрация</a>
+    </nav>
+
+    <!-- Навигация для авторизованных -->
+    <nav id="user-nav" style="display: none;">
+      <a href="profile.html">Профиль</a>
+      <button id="logout-btn">Выход</button>
+    </nav>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1 class="auth-title">Профиль</h1>
+
+      <!-- Email пользователя (только чтение) -->
+      <div class="profile-email-section">
+        <span class="profile-label">Email</span>
+        <span id="user-email" class="profile-email-value"></span>
+      </div>
+
+      <!-- Форма редактирования имени -->
+      <form id="profile-form" novalidate>
+        <div class="form-group">
+          <label for="full-name">Имя</label>
+          <input
+            type="text"
+            id="full-name"
+            name="full_name"
+            placeholder="Ваше имя"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <!-- Сообщение о статусе — скрыто по умолчанию -->
+        <p id="status-message"></p>
+
+        <button type="submit">Сохранить</button>
+      </form>
+    </div>
+  </main>
+
+</body>
+</html>

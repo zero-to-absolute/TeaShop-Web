@@ -1,40 +1,289 @@
 // profile.js — Логика страницы профиля пользователя
-// Загружает данные профиля из таблицы profiles и позволяет изменить имя.
+// Загружает профиль, аватар, позволяет изменить имя и пароль.
 // Гость перенаправляется на страницу входа (redirect-guard).
 
 import { supabase } from '../shared/supabase.js';
 import { getCurrentUser } from './auth-state.js';
 import '../shared/header.js'; // side-effect: инициализация навигации
 
-// --- Вспомогательные функции для статус-сообщения ---
+// --- Утилиты статус-сообщений ---
 
 /**
- * Показывает сообщение в блоке #status-message.
+ * Показывает статус-сообщение в элементе по id.
+ * @param {string} elementId — id элемента-контейнера статуса
  * @param {string} message — текст сообщения
  * @param {boolean} isError — true для ошибки, false для успеха
  */
-function showStatus(message, isError = false) {
-  const statusEl = document.getElementById('status-message');
-  if (!statusEl) return;
+function showSectionStatus(elementId, message, isError = false) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
 
-  statusEl.textContent = message;
-  statusEl.style.display = 'block';
-
-  // Убираем оба класса, затем ставим нужный
-  statusEl.classList.remove('success', 'error');
-  statusEl.classList.add(isError ? 'error' : 'success');
+  el.textContent = message;
+  el.style.display = 'block';
+  el.classList.remove('success', 'error');
+  el.classList.add(isError ? 'error' : 'success');
 }
 
 /**
- * Скрывает блок #status-message.
+ * Скрывает статус-сообщение в элементе по id.
+ * @param {string} elementId — id элемента-контейнера статуса
  */
-function hideStatus() {
-  const statusEl = document.getElementById('status-message');
-  if (!statusEl) return;
+function hideSectionStatus(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
 
-  statusEl.style.display = 'none';
-  statusEl.textContent = '';
-  statusEl.classList.remove('success', 'error');
+  el.style.display = 'none';
+  el.textContent = '';
+  el.classList.remove('success', 'error');
+}
+
+// --- Отображение аватара ---
+
+/**
+ * Рендерит аватар пользователя или плейсхолдер с инициалом.
+ * @param {string|null} avatarUrl — путь к аватару в Storage (или null)
+ * @param {object} user — объект пользователя Supabase
+ */
+function renderAvatar(avatarUrl, user) {
+  const wrapper = document.getElementById('avatar-preview-wrapper');
+  if (!wrapper) return;
+
+  // Очищаем контейнер
+  wrapper.textContent = '';
+
+  if (avatarUrl) {
+    // Получаем публичный URL из Storage
+    const { data } = supabase.storage.from('avatars').getPublicUrl(avatarUrl);
+
+    const img = document.createElement('img');
+    img.id = 'avatar-preview';
+    // Добавляем timestamp для сброса кэша после обновления
+    img.src = data.publicUrl + '?t=' + Date.now();
+    img.alt = 'Аватар';
+    wrapper.appendChild(img);
+  } else {
+    // Плейсхолдер с инициалом
+    const fullNameInput = document.getElementById('full-name');
+    const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+    const initial = fullName
+      ? fullName.charAt(0).toUpperCase()
+      : (user.email ? user.email.charAt(0).toUpperCase() : '?');
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'avatar-placeholder';
+    placeholder.textContent = initial;
+    wrapper.appendChild(placeholder);
+  }
+}
+
+// --- Загрузка профиля ---
+
+/**
+ * Загружает данные профиля из БД и заполняет поля на странице.
+ * @param {object} user — объект пользователя Supabase
+ */
+async function loadProfile(user) {
+  // Показываем email (только чтение)
+  const emailEl = document.getElementById('user-email');
+  if (emailEl) {
+    emailEl.textContent = user.email;
+  }
+
+  const fullNameInput = document.getElementById('full-name');
+
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url, created_at')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      showSectionStatus('profile-status', 'Не удалось загрузить профиль: ' + error.message, true);
+      return;
+    }
+
+    // Заполняем имя
+    if (profile && fullNameInput) {
+      fullNameInput.value = profile.full_name || '';
+    }
+
+    // Форматируем и показываем дату регистрации (дд.мм.гггг)
+    const createdAtEl = document.getElementById('user-created-at');
+    if (createdAtEl && profile && profile.created_at) {
+      const date = new Date(profile.created_at);
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      createdAtEl.textContent = dd + '.' + mm + '.' + yyyy;
+    }
+
+    // Рендерим аватар
+    renderAvatar(profile ? profile.avatar_url : null, user);
+  } catch (err) {
+    console.error('Ошибка при загрузке профиля:', err);
+    showSectionStatus('profile-status', 'Непредвиденная ошибка при загрузке профиля', true);
+  }
+}
+
+// --- Загрузка аватара ---
+
+/**
+ * Обрабатывает выбор файла аватара и загружает его в Storage.
+ * @param {Event} event — событие change на input[type=file]
+ * @param {object} user — объект пользователя Supabase
+ */
+async function handleAvatarChange(event, user) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Валидация типа файла
+  if (!file.type.startsWith('image/')) {
+    showSectionStatus('avatar-status', 'Выберите изображение', true);
+    return;
+  }
+
+  // Валидация размера (макс. 2 МБ)
+  if (file.size > 2 * 1024 * 1024) {
+    showSectionStatus('avatar-status', 'Файл не должен превышать 2 МБ', true);
+    return;
+  }
+
+  const changeBtn = document.getElementById('avatar-change-btn');
+  if (changeBtn) changeBtn.disabled = true;
+
+  hideSectionStatus('avatar-status');
+
+  try {
+    // Загружаем файл в бакет avatars (имя файла = id пользователя)
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(user.id, file, { upsert: true });
+
+    if (uploadError) {
+      showSectionStatus('avatar-status', 'Ошибка загрузки: ' + uploadError.message, true);
+      return;
+    }
+
+    // Обновляем avatar_url в профиле
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        avatar_url: user.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      showSectionStatus('avatar-status', 'Ошибка обновления профиля: ' + updateError.message, true);
+      return;
+    }
+
+    // Перерисовываем аватар и показываем успех
+    renderAvatar(user.id, user);
+    showSectionStatus('avatar-status', 'Фото обновлено');
+  } catch (err) {
+    console.error('Ошибка при загрузке аватара:', err);
+    showSectionStatus('avatar-status', 'Непредвиденная ошибка при загрузке аватара', true);
+  } finally {
+    if (changeBtn) changeBtn.disabled = false;
+  }
+}
+
+// --- Сохранение имени ---
+
+/**
+ * Обрабатывает отправку формы редактирования имени.
+ * @param {Event} event — событие submit формы
+ * @param {object} user — объект пользователя Supabase
+ */
+async function handleProfileSave(event, user) {
+  event.preventDefault();
+  hideSectionStatus('profile-status');
+
+  const fullNameInput = document.getElementById('full-name');
+  const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+
+  // Валидация: имя не должно быть пустым
+  if (!fullName) {
+    showSectionStatus('profile-status', 'Имя не может быть пустым', true);
+    return;
+  }
+
+  const form = document.getElementById('profile-form');
+  const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: fullName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      showSectionStatus('profile-status', 'Ошибка сохранения: ' + error.message, true);
+    } else {
+      // Синхронизируем имя в auth.users.raw_user_meta_data
+      await supabase.auth.updateUser({ data: { full_name: fullName } });
+      showSectionStatus('profile-status', 'Сохранено');
+    }
+  } catch (err) {
+    console.error('Ошибка при обновлении профиля:', err);
+    showSectionStatus('profile-status', 'Непредвиденная ошибка при сохранении', true);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+// --- Смена пароля ---
+
+/**
+ * Обрабатывает отправку формы смены пароля.
+ * @param {Event} event — событие submit формы
+ */
+async function handlePasswordChange(event) {
+  event.preventDefault();
+  hideSectionStatus('password-status');
+
+  const newPassword = document.getElementById('new-password').value;
+  const newPasswordConfirm = document.getElementById('new-password-confirm').value;
+
+  // Валидация длины пароля
+  if (newPassword.length < 6) {
+    showSectionStatus('password-status', 'Пароль должен содержать минимум 6 символов', true);
+    return;
+  }
+
+  // Валидация совпадения паролей
+  if (newPassword !== newPasswordConfirm) {
+    showSectionStatus('password-status', 'Пароли не совпадают', true);
+    return;
+  }
+
+  const form = document.getElementById('password-form');
+  const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      showSectionStatus('password-status', error.message, true);
+    } else {
+      showSectionStatus('password-status', 'Пароль изменён');
+      // Очищаем поля пароля
+      document.getElementById('new-password').value = '';
+      document.getElementById('new-password-confirm').value = '';
+    }
+  } catch (err) {
+    console.error('Ошибка при смене пароля:', err);
+    showSectionStatus('password-status', 'Непредвиденная ошибка при смене пароля', true);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 }
 
 // --- Инициализация при загрузке DOM ---
@@ -43,82 +292,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Guard: проверка авторизации
   const user = await getCurrentUser();
 
-  if (user === null) {
+  if (!user) {
     // Редирект на страницу входа с обратной ссылкой
     window.location.href =
       'login.html?redirect=' + encodeURIComponent(window.location.pathname);
     return;
   }
 
-  // --- Загрузка профиля ---
+  // Загружаем профиль (email, имя, дата, аватар)
+  await loadProfile(user);
 
-  // Показываем email (только чтение)
-  const emailEl = document.getElementById('user-email');
-  if (emailEl) {
-    emailEl.textContent = user.email;
+  // Кнопка выбора аватара — открывает скрытый input[type=file]
+  const avatarChangeBtn = document.getElementById('avatar-change-btn');
+  const avatarInput = document.getElementById('avatar-input');
+
+  if (avatarChangeBtn && avatarInput) {
+    avatarChangeBtn.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', (event) => handleAvatarChange(event, user));
   }
 
-  // Запрашиваем full_name из таблицы profiles
-  const fullNameInput = document.getElementById('full-name');
-
-  try {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user.id)
-      .single();
-
-    if (error) {
-      showStatus('Не удалось загрузить профиль: ' + error.message, true);
-    } else if (profile && fullNameInput) {
-      fullNameInput.value = profile.full_name || '';
-    }
-  } catch (err) {
-    console.error('Ошибка при загрузке профиля:', err);
-    showStatus('Непредвиденная ошибка при загрузке профиля', true);
+  // Форма редактирования имени
+  const profileForm = document.getElementById('profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', (event) => handleProfileSave(event, user));
   }
 
-  // --- Обработчик формы ---
-
-  const form = document.getElementById('profile-form');
-  if (!form) return;
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    hideStatus();
-
-    const fullName = fullNameInput ? fullNameInput.value.trim() : '';
-
-    // Валидация: имя не должно быть пустым
-    if (!fullName) {
-      showStatus('Имя не может быть пустым', true);
-      return;
-    }
-
-    // Блокируем кнопку на время запроса
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.disabled = true;
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        showStatus('Ошибка сохранения: ' + error.message, true);
-      } else {
-        showStatus('Сохранено');
-      }
-    } catch (err) {
-      console.error('Ошибка при обновлении профиля:', err);
-      showStatus('Непредвиденная ошибка при сохранении', true);
-    } finally {
-      // Разблокируем кнопку
-      if (submitBtn) submitBtn.disabled = false;
-    }
-  });
+  // Форма смены пароля
+  const passwordForm = document.getElementById('password-form');
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', (event) => handlePasswordChange(event));
+  }
 });

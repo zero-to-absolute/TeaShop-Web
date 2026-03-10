@@ -34,34 +34,69 @@
   </header>
 
   <main class="auth-page">
-    <div class="auth-card">
+    <div class="profile-card">
       <h1 class="auth-title">Профиль</h1>
 
-      <!-- Email пользователя (только чтение) -->
-      <div class="profile-email-section">
-        <span class="profile-label">Email</span>
-        <span id="user-email" class="profile-email-value"></span>
-      </div>
+      <!-- Секция 1: Аватар -->
+      <section class="profile-section profile-avatar-section">
+        <div id="avatar-preview-wrapper">
+          <!-- JS заполнит: <img> или <div class="avatar-placeholder"> -->
+        </div>
+        <div class="avatar-actions">
+          <button id="avatar-change-btn" type="button">Изменить фото</button>
+          <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp" hidden>
+        </div>
+        <p id="avatar-status" class="status-msg"></p>
+      </section>
 
-      <!-- Форма редактирования имени -->
-      <form id="profile-form" novalidate>
-        <div class="form-group">
-          <label for="full-name">Имя</label>
-          <input
-            type="text"
-            id="full-name"
-            name="full_name"
-            placeholder="Ваше имя"
-            autocomplete="name"
-            required
-          >
+      <hr class="profile-divider">
+
+      <!-- Секция 2: Личные данные -->
+      <section class="profile-section">
+        <h2 class="section-title">Личные данные</h2>
+
+        <div class="profile-readonly-field">
+          <span class="profile-label">Email</span>
+          <span id="user-email" class="profile-value"></span>
         </div>
 
-        <!-- Сообщение о статусе — скрыто по умолчанию -->
-        <p id="status-message"></p>
+        <div class="profile-readonly-field">
+          <span class="profile-label">Дата регистрации</span>
+          <span id="user-created-at" class="profile-value"></span>
+        </div>
 
-        <button type="submit">Сохранить</button>
-      </form>
+        <form id="profile-form" novalidate>
+          <div class="form-group">
+            <label for="full-name">Имя</label>
+            <input type="text" id="full-name" name="full_name"
+                   placeholder="Ваше имя" autocomplete="name">
+          </div>
+          <p id="profile-status" class="status-msg"></p>
+          <button type="submit">Сохранить имя</button>
+        </form>
+      </section>
+
+      <hr class="profile-divider">
+
+      <!-- Секция 3: Безопасность -->
+      <section class="profile-section">
+        <h2 class="section-title">Безопасность</h2>
+
+        <form id="password-form" novalidate>
+          <div class="form-group">
+            <label for="new-password">Новый пароль</label>
+            <input type="password" id="new-password" name="new_password"
+                   placeholder="Минимум 6 символов" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label for="new-password-confirm">Подтверждение пароля</label>
+            <input type="password" id="new-password-confirm"
+                   placeholder="Повторите пароль" autocomplete="new-password">
+          </div>
+          <p id="password-status" class="status-msg"></p>
+          <button type="submit">Сменить пароль</button>
+        </form>
+      </section>
     </div>
   </main>
 

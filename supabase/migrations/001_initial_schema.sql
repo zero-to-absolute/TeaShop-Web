@@ -38,27 +38,33 @@ CREATE TABLE teas (
     slug         text NOT NULL UNIQUE,
     description  text,
     category_id  int NOT NULL REFERENCES categories (id),
-    price        numeric(10, 2) NOT NULL CHECK (price > 0),
-    weight_grams smallint CHECK (weight_grams > 0),
-    image_url    text,
-    in_stock     boolean NOT NULL DEFAULT true,
-    created_at   timestamptz NOT NULL DEFAULT now(),
-    updated_at   timestamptz NOT NULL DEFAULT now()
+    price_per_gram numeric(10, 2) NOT NULL CHECK (price_per_gram > 0),
+    weight_grams   smallint CHECK (weight_grams > 0),
+    image_url      text,
+    in_stock       boolean NOT NULL DEFAULT true,
+    created_at     timestamptz NOT NULL DEFAULT now(),
+    updated_at     timestamptz NOT NULL DEFAULT now()
 );
+
+COMMENT ON COLUMN teas.price_per_gram IS 'Цена за 1 грамм в рублях';
+COMMENT ON COLUMN teas.weight_grams IS 'Стандартная фасовка в граммах (для каталога)';
 
 -- Ингредиенты
 CREATE TABLE ingredients (
-    id           int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name         text NOT NULL,
-    slug         text NOT NULL UNIQUE,
-    description  text,
-    price        numeric(10, 2) NOT NULL CHECK (price > 0),
-    weight_grams smallint CHECK (weight_grams > 0),
-    image_url    text,
-    in_stock     boolean NOT NULL DEFAULT true,
-    created_at   timestamptz NOT NULL DEFAULT now(),
-    updated_at   timestamptz NOT NULL DEFAULT now()
+    id             int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name           text NOT NULL,
+    slug           text NOT NULL UNIQUE,
+    description    text,
+    price_per_gram numeric(10, 2) NOT NULL CHECK (price_per_gram > 0),
+    weight_grams   smallint CHECK (weight_grams > 0),
+    image_url      text,
+    in_stock       boolean NOT NULL DEFAULT true,
+    created_at     timestamptz NOT NULL DEFAULT now(),
+    updated_at     timestamptz NOT NULL DEFAULT now()
 );
+
+COMMENT ON COLUMN ingredients.price_per_gram IS 'Цена за 1 грамм в рублях';
+COMMENT ON COLUMN ingredients.weight_grams IS 'Стандартная фасовка в граммах (для каталога)';
 
 -- Характеристики чаёв (M:N)
 CREATE TABLE tea_characteristics (

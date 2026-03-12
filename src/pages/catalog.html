@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог чаёв — TeaShop</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Стили каталога -->
+  <link rel="stylesheet" href="../css/catalog.css">
+
+  <!-- Логика каталога (создаётся в фазе 2) -->
+  <script type="module" src="../js/catalog/catalog.js"></script>
+
+  <!-- Общая логика шапки -->
+  <script type="module" src="../js/shared/header.js"></script>
+</head>
+<body>
+
+  <!-- Шапка сайта с навигацией -->
+  <header id="site-header">
+    <a href="index.html" class="logo">TeaShop</a>
+
+    <!-- Навигация для гостей -->
+    <nav id="guest-nav">
+      <a href="login.html">Вход</a>
+      <a href="register.html">Регистрация</a>
+    </nav>
+
+    <!-- Навигация для авторизованных -->
+    <nav id="user-nav" style="display: none;">
+      <a href="profile.html">Профиль</a>
+      <button id="logout-btn">Выход</button>
+    </nav>
+  </header>
+
+  <main class="catalog-page">
+    <h1>Каталог чаёв</h1>
+
+    <!-- Фильтр по категориям — JS заполнит кнопками -->
+    <div id="category-filter"></div>
+
+    <!-- Фильтр по характеристикам — JS заполнит секциями вкус/аромат/эффект -->
+    <div id="characteristic-filter"></div>
+
+    <!-- Индикатор загрузки — виден по умолчанию, JS скроет -->
+    <div id="loading">Загрузка...</div>
+
+    <!-- Заглушка: пустой результат или ошибка — JS управляет текстом -->
+    <div id="empty-state" hidden></div>
+
+    <!-- Сетка карточек чаёв — JS заполнит карточками -->
+    <div id="tea-grid" class="tea-grid"></div>
+
+    <!-- Пагинация — JS заполнит кнопками страниц -->
+    <nav id="pagination" aria-label="Страницы каталога"></nav>
+  </main>
+
+</body>
+</html>

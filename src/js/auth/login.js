@@ -39,7 +39,7 @@ function hideError() {
  */
 function getRedirectUrl() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('redirect') || '/';
+  return params.get('redirect') || 'index.html';
 }
 
 // --- Обработчик отправки формы ---

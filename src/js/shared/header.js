@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await logout();
         // После выхода onAuthChange сработает и обновит UI,
         // но делаем редирект на главную
-        window.location.href = '/';
+        window.location.href = 'index.html';
       } catch (err) {
         console.error('Ошибка при выходе:', err);
       }

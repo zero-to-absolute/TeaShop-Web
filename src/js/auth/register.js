@@ -90,7 +90,7 @@ async function handleRegister(event) {
     }
 
     // Успешная регистрация — перенаправляем на главную
-    window.location.href = '/';
+    window.location.href = 'index.html';
   } catch (err) {
     console.error('Непредвиденная ошибка при регистрации:', err);
     showError('Произошла непредвиденная ошибка. Попробуйте позже.');
@@ -110,7 +110,7 @@ async function init() {
 
     if (user) {
       // Пользователь уже авторизован — редирект на главную
-      window.location.href = '/';
+      window.location.href = 'index.html';
       return;
     }
   } catch (err) {

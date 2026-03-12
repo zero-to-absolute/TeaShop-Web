@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeaShop — Чайный магазин</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Стили главной страницы -->
+  <link rel="stylesheet" href="../css/index.css">
+
+  <!-- Общая логика шапки (auth-навигация) -->
+  <script type="module" src="../js/shared/header.js"></script>
+</head>
+<body>
+
+  <!-- Шапка сайта с навигацией -->
+  <header id="site-header">
+    <a href="index.html" class="logo">TeaShop</a>
+
+    <!-- Навигация для гостей -->
+    <nav id="guest-nav">
+      <a href="login.html">Вход</a>
+      <a href="register.html">Регистрация</a>
+    </nav>
+
+    <!-- Навигация для авторизованных (скрыта по умолчанию) -->
+    <nav id="user-nav" style="display: none;">
+      <a href="profile.html">Профиль</a>
+      <button id="logout-btn">Выход</button>
+    </nav>
+  </header>
+
+  <main class="home-page">
+
+    <!-- Hero-секция: приветствие и призыв к действию -->
+    <section class="hero">
+      <h1>Найди свой чай</h1>
+      <p>Каталог отборных сортов со всего мира. Зелёный, чёрный, белый, улун — выбирай по вкусу и аромату.</p>
+      <a class="cta-btn" href="catalog.html">Перейти в каталог</a>
+    </section>
+
+    <!-- Карточки разделов сайта -->
+    <section class="features">
+
+      <!-- Карточка: Каталог чаёв -->
+      <a class="feature-card" href="catalog.html">
+        <span class="card-icon">🍃</span>
+        <h2>Каталог чаёв</h2>
+        <p>Все сорта с описанием, фильтрацией по категориям и характеристикам — вкус, аромат, эффект.</p>
+      </a>
+
+      <!-- Карточка: Конструктор смесей (раздел в разработке) -->
+      <span class="feature-card disabled">
+        <span class="card-icon">⚗️</span>
+        <h2>Конструктор смесей</h2>
+        <p>Составь собственную чайную смесь по анкете — система подберёт ингредиенты под твои предпочтения.</p>
+      </span>
+
+      <!-- Карточка: Личный кабинет -->
+      <a class="feature-card" href="profile.html">
+        <span class="card-icon">👤</span>
+        <h2>Личный кабинет</h2>
+        <p>Сохраняй понравившиеся составы и управляй своим профилем после регистрации.</p>
+      </a>
+
+    </section>
+  </main>
+
+  <!-- Подвал сайта -->
+  <footer class="site-footer">
+    <p>© 2025 TeaShop</p>
+  </footer>
+
+</body>
+</html>

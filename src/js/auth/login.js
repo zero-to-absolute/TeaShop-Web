@@ -1,7 +1,6 @@
 // login.js — Логика страницы входа
 // Обрабатывает форму входа, валидацию, вызов Supabase Auth и редирект.
 
-import '../shared/header.js';
 import { supabase } from '../shared/supabase.js';
 import { getCurrentUser } from './auth-state.js';
 
@@ -10,7 +9,7 @@ const loginForm = document.getElementById('login-form');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const errorMessage = document.getElementById('error-message');
-const submitButton = loginForm.querySelector('button[type="submit"]');
+const submitButton = document.getElementById('submit-btn');
 
 // --- Вспомогательные функции ---
 
@@ -21,7 +20,7 @@ const submitButton = loginForm.querySelector('button[type="submit"]');
  */
 function showError(message) {
   errorMessage.textContent = message;
-  errorMessage.style.display = 'block';
+  errorMessage.classList.remove('hidden');
 }
 
 /**
@@ -29,7 +28,7 @@ function showError(message) {
  */
 function hideError() {
   errorMessage.textContent = '';
-  errorMessage.style.display = 'none';
+  errorMessage.classList.add('hidden');
 }
 
 /**
@@ -39,7 +38,7 @@ function hideError() {
  */
 function getRedirectUrl() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('redirect') || 'index.html';
+  return params.get('redirect') || '/';
 }
 
 // --- Обработчик отправки формы ---

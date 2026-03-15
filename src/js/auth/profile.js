@@ -3,8 +3,7 @@
 // Гость перенаправляется на страницу входа (redirect-guard).
 
 import { supabase } from '../shared/supabase.js';
-import { getCurrentUser } from './auth-state.js';
-import '../shared/header.js'; // side-effect: инициализация навигации
+import { getCurrentUser, logout } from './auth-state.js';
 
 // --- Утилиты статус-сообщений ---
 
@@ -20,8 +19,7 @@ function showSectionStatus(elementId, message, isError = false) {
 
   el.textContent = message;
   el.style.display = 'block';
-  el.classList.remove('success', 'error');
-  el.classList.add(isError ? 'error' : 'success');
+  el.style.color = isError ? '#ef4444' : '#22c55e';
 }
 
 /**
@@ -34,13 +32,12 @@ function hideSectionStatus(elementId) {
 
   el.style.display = 'none';
   el.textContent = '';
-  el.classList.remove('success', 'error');
 }
 
 // --- Отображение аватара ---
 
 /**
- * Рендерит аватар пользователя или плейсхолдер с инициалом.
+ * Рендерит аватар пользователя или плейсхолдер.
  * @param {string|null} avatarUrl — путь к аватару в Storage (или null)
  * @param {object} user — объект пользователя Supabase
  */
@@ -48,31 +45,16 @@ function renderAvatar(avatarUrl, user) {
   const wrapper = document.getElementById('avatar-preview-wrapper');
   if (!wrapper) return;
 
-  // Очищаем контейнер
-  wrapper.textContent = '';
-
   if (avatarUrl) {
     // Получаем публичный URL из Storage
     const { data } = supabase.storage.from('avatars').getPublicUrl(avatarUrl);
 
-    const img = document.createElement('img');
-    img.id = 'avatar-preview';
-    // Добавляем timestamp для сброса кэша после обновления
-    img.src = data.publicUrl + '?t=' + Date.now();
-    img.alt = 'Аватар';
-    wrapper.appendChild(img);
+    // Заменяем содержимое на изображение
+    wrapper.innerHTML = `<img id="avatar-preview" src="${data.publicUrl}?t=${Date.now()}" alt="Аватар" class="w-full h-full object-cover">`;
   } else {
-    // Плейсхолдер с инициалом
-    const fullNameInput = document.getElementById('full-name');
-    const fullName = fullNameInput ? fullNameInput.value.trim() : '';
-    const initial = fullName
-      ? fullName.charAt(0).toUpperCase()
-      : (user.email ? user.email.charAt(0).toUpperCase() : '?');
-
-    const placeholder = document.createElement('div');
-    placeholder.className = 'avatar-placeholder';
-    placeholder.textContent = initial;
-    wrapper.appendChild(placeholder);
+    // Плейсхолдер с иконкой пользователя (Lucide)
+    wrapper.innerHTML = '<i data-lucide="user" size="64"></i>';
+    if (window.lucide) window.lucide.createIcons();
   }
 }
 
@@ -90,6 +72,7 @@ async function loadProfile(user) {
   }
 
   const fullNameInput = document.getElementById('full-name');
+  const nameDisplay = document.getElementById('user-name-display');
 
   try {
     const { data: profile, error } = await supabase
@@ -99,6 +82,12 @@ async function loadProfile(user) {
       .single();
 
     if (error) {
+      // PGRST116 — профиль ещё не создан, не критично
+      if (error.code === 'PGRST116') {
+        if (nameDisplay) nameDisplay.textContent = user.email;
+        renderAvatar(null, user);
+        return;
+      }
       showSectionStatus('profile-status', 'Не удалось загрузить профиль: ' + error.message, true);
       return;
     }
@@ -106,6 +95,11 @@ async function loadProfile(user) {
     // Заполняем имя
     if (profile && fullNameInput) {
       fullNameInput.value = profile.full_name || '';
+    }
+
+    // Обновляем отображение имени в сайдбаре
+    if (nameDisplay) {
+      nameDisplay.textContent = profile?.full_name || user.email;
     }
 
     // Форматируем и показываем дату регистрации (дд.мм.гггг)
@@ -228,6 +222,11 @@ async function handleProfileSave(event, user) {
     } else {
       // Синхронизируем имя в auth.users.raw_user_meta_data
       await supabase.auth.updateUser({ data: { full_name: fullName } });
+
+      // Обновляем отображение имени в сайдбаре
+      const nameDisplay = document.getElementById('user-name-display');
+      if (nameDisplay) nameDisplay.textContent = fullName;
+
       showSectionStatus('profile-status', 'Сохранено');
     }
   } catch (err) {
@@ -295,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) {
     // Редирект на страницу входа с обратной ссылкой
     window.location.href =
-      'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+      '/src/pages/login.html?redirect=' + encodeURIComponent(window.location.pathname);
     return;
   }
 
@@ -321,5 +320,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const passwordForm = document.getElementById('password-form');
   if (passwordForm) {
     passwordForm.addEventListener('submit', (event) => handlePasswordChange(event));
+  }
+
+  // Кнопка выхода в сайдбаре профиля
+  const logoutBtn = document.getElementById('profile-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await logout();
+      window.location.href = '/';
+    });
   }
 });

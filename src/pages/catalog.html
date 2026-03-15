@@ -1,62 +1,135 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Каталог чаёв — TeaShop</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Каталог — TeaShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="bg-parchment text-tea-dark font-sans selection:bg-almond-silk selection:text-white">
+    <!-- Navigation -->
+    <nav id="main-nav" class="sticky top-0 w-full z-50 transition-all duration-500 bg-parchment/90 backdrop-blur-xl py-3 shadow-sm">
+      <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <a href="/" class="flex items-center gap-4 group">
+          <div class="w-12 h-12 bg-almond-silk rounded-full flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+            <i data-lucide="leaf" size="24"></i>
+          </div>
+          <span class="text-3xl font-serif font-bold tracking-tight text-tea-dark">TeaShop</span>
+        </a>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <div class="hidden md:flex items-center gap-12">
+          <a href="/" class="text-sm uppercase tracking-widest font-bold text-tea-dark/60 hover:text-almond-silk transition-colors">Главная</a>
+          <a href="/src/pages/catalog.html" class="text-sm uppercase tracking-widest font-bold text-almond-silk">Каталог</a>
+          <a href="#" class="text-sm uppercase tracking-widest font-bold text-tea-dark/60 hover:text-almond-silk transition-colors">О нас</a>
+        </div>
 
-  <!-- Стили каталога -->
-  <link rel="stylesheet" href="../css/catalog.css">
-
-  <!-- Логика каталога (создаётся в фазе 2) -->
-  <script type="module" src="../js/catalog/catalog.js"></script>
-
-  <!-- Общая логика шапки -->
-  <script type="module" src="../js/shared/header.js"></script>
-</head>
-<body>
-
-  <!-- Шапка сайта с навигацией -->
-  <header id="site-header">
-    <a href="index.html" class="logo">TeaShop</a>
-
-    <!-- Навигация для гостей -->
-    <nav id="guest-nav">
-      <a href="login.html">Вход</a>
-      <a href="register.html">Регистрация</a>
+        <div class="flex items-center gap-6">
+          <button class="p-2.5 hover:bg-bone rounded-full transition-colors relative">
+            <i data-lucide="shopping-bag" size="24"></i>
+            <span class="absolute top-0 right-0 w-5 h-5 bg-almond-silk text-white text-[10px] flex items-center justify-center rounded-full">0</span>
+          </button>
+          <div id="auth-buttons">
+            <!-- Будет заполнено через JS -->
+          </div>
+        </div>
+      </div>
     </nav>
 
-    <!-- Навигация для авторизованных -->
-    <nav id="user-nav" style="display: none;">
-      <a href="profile.html">Профиль</a>
-      <button id="logout-btn">Выход</button>
-    </nav>
-  </header>
+    <main class="py-20">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
+          <div>
+            <span class="text-almond-silk uppercase tracking-widest text-[10px] font-bold mb-4 block">Наш ассортимент</span>
+            <h1 class="text-5xl md:text-7xl font-serif text-tea-dark">Каталог чая</h1>
+          </div>
 
-  <main class="catalog-page">
-    <h1>Каталог чаёв</h1>
+          <button id="toggle-filters" class="flex items-center gap-3 px-6 py-3 border border-bone hover:border-tea-dark transition-all text-xs font-bold uppercase tracking-widest group">
+            <div class="slider-icon">
+              <div class="slider-line"><div class="slider-knob"></div></div>
+              <div class="slider-line"><div class="slider-knob"></div></div>
+              <div class="slider-line"><div class="slider-knob"></div></div>
+            </div>
+            <span>Фильтры</span>
+          </button>
+        </div>
 
-    <!-- Фильтр по категориям — JS заполнит кнопками -->
-    <div id="category-filter"></div>
+        <div class="flex flex-col lg:flex-row items-start">
+          <!-- Sidebar Filters -->
+          <aside id="filter-sidebar" class="shrink-0 overflow-hidden">
+            <div id="category-filter" class="mb-6">
+              <!-- Категории — заполняется через JS -->
+            </div>
+            <div id="characteristic-filter" class="space-y-6">
+              <!-- Характеристики — заполняется через JS -->
+            </div>
+          </aside>
 
-    <!-- Фильтр по характеристикам — JS заполнит секциями вкус/аромат/эффект -->
-    <div id="characteristic-filter"></div>
+          <!-- Grid -->
+          <div class="flex-grow">
+            <div id="loading" class="py-20 text-center" hidden>
+              <div class="inline-block w-8 h-8 border-2 border-almond-silk border-t-transparent rounded-full animate-spin"></div>
+              <p class="mt-4 text-xs uppercase tracking-widest text-tea-dark/40">Загрузка коллекции...</p>
+            </div>
 
-    <!-- Индикатор загрузки — виден по умолчанию, JS скроет -->
-    <div id="loading">Загрузка...</div>
+            <div id="empty-state" class="py-20 text-center border border-dashed border-bone" hidden>
+              <p class="text-tea-dark/40">В этой категории пока нет чаёв</p>
+            </div>
 
-    <!-- Заглушка: пустой результат или ошибка — JS управляет текстом -->
-    <div id="empty-state" hidden></div>
+            <div id="tea-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <!-- Карточки чаёв — заполняется через JS -->
+            </div>
 
-    <!-- Сетка карточек чаёв — JS заполнит карточками -->
-    <div id="tea-grid" class="tea-grid"></div>
+            <div id="pagination" class="mt-20 flex justify-center gap-4">
+              <!-- Пагинация — заполняется через JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
 
-    <!-- Пагинация — JS заполнит кнопками страниц -->
-    <nav id="pagination" aria-label="Страницы каталога"></nav>
-  </main>
+    <footer class="bg-tea-dark text-parchment py-24">
+      <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16">
+        <div class="col-span-1 md:col-span-2">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-almond-silk rounded-full flex items-center justify-center text-white">
+              <i data-lucide="leaf" size="20"></i>
+            </div>
+            <span class="text-2xl font-serif font-bold tracking-tight">TeaShop</span>
+          </div>
+          <p class="text-parchment/40 max-w-sm mb-10 leading-relaxed">
+            Создаем культуру правильного чаепития. Каждая чашка — это путешествие в мир гармонии и вкуса.
+          </p>
+        </div>
 
-</body>
+        <div>
+          <h4 class="font-serif text-xl mb-8">Разделы</h4>
+          <ul class="space-y-4 text-sm text-parchment/50">
+            <li><a href="/src/pages/catalog.html" class="hover:text-almond-silk transition-colors">Каталог</a></li>
+            <li><a href="#" class="hover:text-almond-silk transition-colors">О нас</a></li>
+            <li><a href="#" class="hover:text-almond-silk transition-colors">Доставка</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-serif text-xl mb-8">Помощь</h4>
+          <ul class="space-y-4 text-sm text-parchment/50">
+            <li><a href="#" class="hover:text-almond-silk transition-colors">FAQ</a></li>
+            <li><a href="#" class="hover:text-almond-silk transition-colors">Контакты</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+    <script type="module" src="/src/js/main.js"></script>
+    <script type="module" src="/src/js/catalog/catalog.js"></script>
+  </body>
 </html>

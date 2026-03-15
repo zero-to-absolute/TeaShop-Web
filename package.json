@@ -1,0 +1,20 @@
+{
+  "name": "teashop",
+  "version": "1.0.0",
+  "description": "Online tea shop with custom blend constructor",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["tea", "shop", "supabase"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "vite": "^6.2.0"
+  }
+}

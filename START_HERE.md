@@ -10,6 +10,32 @@
 
 ---
 
+## Быстрый старт
+
+```bash
+npm install       # установка зависимостей (Vite + Tailwind CSS)
+npm run dev       # запуск dev-сервера на http://localhost:3000
+npm run build     # production-сборка в dist/
+npm run preview   # просмотр production-сборки
+```
+
+**Важно:** Проект использует Vite + Tailwind CSS. Открывать страницы через Live Server **не получится** — Tailwind требует сборщик для компиляции стилей. Всегда используйте `npm run dev`.
+
+---
+
+## Конфигурация Supabase
+
+Ключи Supabase хранятся в `.env` файле (не в репозитории):
+
+```
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+```
+
+Fallback-значения также хранятся в `src/js/shared/config.js`.
+
+---
+
 ## Порядок разработки фич
 
 Каждая фича проходит 4 фазы. Каждая фаза — **отдельный чат** (или `/clear`).
@@ -20,125 +46,42 @@
 
 ---
 
-## Какие модели использовать и когда
-
-### Claude Code (этот чат) — основная разработка
-
-| Когда | Команда |
-|---|---|
-| Изучить проект, составить research | `/research каталог чаёв` |
-| Спроектировать архитектуру фичи | `/design каталог чаёв` |
-| Разбить дизайн на шаги реализации | `/plan каталог чаёв` |
-| Написать код одной фазы | `/implement docs/plans/plan_catalog/01_data_model.md` |
-| Исправить баг | Описать баг в чате, Claude найдёт и исправит |
-
-### Gemini / AI Studio — стили и изображения
-
-| Когда | Что делать |
-|---|---|
-| CSS для страницы готов HTML | Передать HTML в Gemini, попросить написать CSS |
-| Нужны фото чаёв / ингредиентов | Imagen в AI Studio |
-
-**Важно:** CSS и изображения делаются **после** того, как HTML-структура страницы готова.
-
----
-
-## Рекомендуемый порядок разработки фич
-
-Начинать с фундамента — данные и подключение к БД, потом UI.
-
-```
-1. БД + Supabase
-   └── Схема таблиц (teas, ingredients, compatibility, recipes, profiles, cart)
-   └── RLS-политики для каждой таблицы
-
-2. Shared / Config
-   └── src/js/shared/config.js       — Supabase URL + anon key
-   └── src/js/shared/supabase.js     — инициализация клиента
-
-3. Авторизация
-   └── src/js/auth/                  — вход, регистрация, выход, профиль
-
-4. Каталог
-   └── src/js/catalog/               — список чаёв, фильтрация, карточки
-
-5. Конструктор
-   └── src/js/constructor/           — анкета, подбор, scoring, результат
-
-6. Корзина
-   └── src/js/cart/                  — добавление, отображение, оформление
-
-7. CSS (через Gemini)
-   └── src/css/                      — стили для каждой страницы
-```
-
----
-
-## Первые шаги прямо сейчас
-
-### Шаг 1 — Настрой Supabase
-
-1. Создай проект на supabase.com
-2. Скопируй `Project URL` и `anon public key`
-3. Создай `src/js/shared/config.js`:
-
-```js
-// Конфигурация Supabase
-export const SUPABASE_URL = 'https://xxx.supabase.co';
-export const SUPABASE_ANON_KEY = 'eyJ...';
-```
-
-> **Никогда не коммить этот файл с реальными ключами в публичный репозиторий.**
-> Добавь его в `.gitignore` или используй переменные окружения.
-
-### Шаг 2 — Спроектируй схему БД
-
-Запусти в этом чате:
-```
-/research схема базы данных TeaShop: таблицы для чаёв, ингредиентов, совместимости, рецептов, корзины, профилей
-```
-
-Получи research → `/design` → `/plan` → создай таблицы в Supabase.
-
-### Шаг 3 — Начни с авторизации
-
-Авторизация нужна для корзины и профилей. Начни с неё после БД:
-```
-/research авторизация через Supabase Auth: вход, регистрация, выход, триггер создания профиля
-```
-
----
-
 ## Структура проекта
 
 ```
 TeaShop/
-├── CLAUDE.md                          — контекст для Claude (автозагрузка)
-├── START_HERE.md                      — этот файл
-├── teashop_project_brief.md           — описание проекта
-├── teashop-engineering.md             — инженерный процесс
-│
-├── .claude/
-│   └── skills/
-│       ├── research.md               — /research
-│       ├── design.md                 — /design
-│       ├── plan.md                   — /plan
-│       └── implement.md              — /implement
-│
-├── docs/
-│   ├── research/                     — research_*.md файлы
-│   ├── design/                       — design_*.md файлы
-│   └── plans/                        — plan_*/01_*.md файлы
+├── index.html                          — главная страница (Vite entry point)
+├── vite.config.ts                      — конфигурация Vite + Tailwind
+├── package.json                        — зависимости и скрипты
+├── .env                                — переменные окружения (не в git)
+├── CLAUDE.md                           — контекст для Claude
+├── START_HERE.md                       — этот файл
 │
 ├── src/
+│   ├── index.css                       — Tailwind entry point (@theme, компоненты)
 │   ├── js/
-│   │   ├── catalog/
-│   │   ├── constructor/
-│   │   ├── cart/
-│   │   ├── auth/
-│   │   └── shared/                   — config.js, supabase.js, utils.js
-│   ├── css/
-│   └── pages/                        — index.html, catalog.html, ...
+│   │   ├── main.js                     — навигация (auth UI)
+│   │   ├── catalog/                    — каталог чаёв с фильтрами
+│   │   ├── constructor/                — конструктор смесей
+│   │   ├── cart/                       — корзина
+│   │   ├── auth/                       — вход, регистрация, профиль, auth-state
+│   │   └── shared/                     — config.js, supabase.js, utils.js
+│   └── pages/                          — catalog.html, login.html, register.html, profile.html
 │
+├── supabase/                           — миграции БД
+├── docs/                               — research, design, plans
 └── tests/
+```
+
+---
+
+## Рекомендуемый порядок разработки
+
+```
+1. БД + Supabase ✅
+2. Shared / Config ✅
+3. Авторизация ✅
+4. Каталог ✅
+5. Конструктор (в разработке)
+6. Корзина (в разработке)
 ```

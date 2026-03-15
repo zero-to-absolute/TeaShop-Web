@@ -1,104 +1,114 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Профиль — TeaShop</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Профиль — TeaShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="bg-parchment text-tea-dark font-sans min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav id="main-nav" class="sticky top-0 w-full z-50 bg-parchment/90 backdrop-blur-xl py-3 shadow-sm">
+      <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <a href="/" class="flex items-center gap-4 group">
+          <div class="w-12 h-12 bg-almond-silk rounded-full flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+            <i data-lucide="leaf" size="24"></i>
+          </div>
+          <span class="text-3xl font-serif font-bold tracking-tight text-tea-dark">TeaShop</span>
+        </a>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <div class="hidden md:flex items-center gap-12">
+          <a href="/" class="text-sm uppercase tracking-widest font-bold text-tea-dark/60 hover:text-almond-silk transition-colors">Главная</a>
+          <a href="/src/pages/catalog.html" class="text-sm uppercase tracking-widest font-bold text-tea-dark/60 hover:text-almond-silk transition-colors">Каталог</a>
+          <a href="#" class="text-sm uppercase tracking-widest font-bold text-tea-dark/60 hover:text-almond-silk transition-colors">О нас</a>
+        </div>
 
-  <!-- Стили авторизации -->
-  <link rel="stylesheet" href="../css/auth.css">
-
-  <!-- Логика профиля -->
-  <script type="module" src="../js/auth/profile.js"></script>
-</head>
-<body>
-
-  <!-- Шапка сайта с навигацией -->
-  <header id="site-header">
-    <a href="index.html" class="logo">TeaShop</a>
-
-    <!-- Навигация для гостей -->
-    <nav id="guest-nav">
-      <a href="login.html">Вход</a>
-      <a href="register.html">Регистрация</a>
+        <div class="flex items-center gap-6">
+          <button class="p-2.5 hover:bg-bone rounded-full transition-colors relative">
+            <i data-lucide="shopping-bag" size="24"></i>
+            <span class="absolute top-0 right-0 w-5 h-5 bg-almond-silk text-white text-[10px] flex items-center justify-center rounded-full">0</span>
+          </button>
+          <div id="auth-buttons">
+            <!-- Будет заполнено через JS -->
+          </div>
+        </div>
+      </div>
     </nav>
 
-    <!-- Навигация для авторизованных -->
-    <nav id="user-nav" style="display: none;">
-      <a href="profile.html">Профиль</a>
-      <button id="logout-btn">Выход</button>
-    </nav>
-  </header>
-
-  <main class="auth-page">
-    <div class="profile-card">
-      <h1 class="auth-title">Профиль</h1>
-
-      <!-- Секция 1: Аватар -->
-      <section class="profile-section profile-avatar-section">
-        <div id="avatar-preview-wrapper">
-          <!-- JS заполнит: <img> или <div class="avatar-placeholder"> -->
-        </div>
-        <div class="avatar-actions">
-          <button id="avatar-change-btn" type="button">Изменить фото</button>
-          <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp" hidden>
-        </div>
-        <p id="avatar-status" class="status-msg"></p>
-      </section>
-
-      <hr class="profile-divider">
-
-      <!-- Секция 2: Личные данные -->
-      <section class="profile-section">
-        <h2 class="section-title">Личные данные</h2>
-
-        <div class="profile-readonly-field">
-          <span class="profile-label">Email</span>
-          <span id="user-email" class="profile-value"></span>
-        </div>
-
-        <div class="profile-readonly-field">
-          <span class="profile-label">Дата регистрации</span>
-          <span id="user-created-at" class="profile-value"></span>
-        </div>
-
-        <form id="profile-form" novalidate>
-          <div class="form-group">
-            <label for="full-name">Имя</label>
-            <input type="text" id="full-name" name="full_name"
-                   placeholder="Ваше имя" autocomplete="name">
+    <main class="flex-1 py-20">
+      <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-12">
+        <!-- Sidebar -->
+        <aside class="space-y-8">
+          <div class="bg-white border border-bone p-8 text-center space-y-6">
+            <div id="avatar-preview-wrapper" class="w-32 h-32 mx-auto bg-parchment rounded-full flex items-center justify-center text-almond-silk border-2 border-bone overflow-hidden">
+              <i data-lucide="user" size="64"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-serif text-tea-dark" id="user-name-display">Загрузка...</h2>
+              <p class="text-xs text-tea-dark/40 uppercase tracking-widest mt-1">Дата регистрации: <span id="user-created-at">—</span></p>
+            </div>
+            <button id="avatar-change-btn" class="w-full py-3 border border-bone text-[10px] font-bold uppercase tracking-widest hover:bg-parchment transition-all">Сменить фото</button>
+            <input type="file" id="avatar-input" hidden accept="image/*">
+            <p id="avatar-status" class="text-[10px] mt-2" style="display: none;"></p>
           </div>
-          <p id="profile-status" class="status-msg"></p>
-          <button type="submit">Сохранить имя</button>
-        </form>
-      </section>
 
-      <hr class="profile-divider">
+          <nav class="bg-white border border-bone overflow-hidden">
+            <button class="w-full px-8 py-4 text-left text-xs font-bold uppercase tracking-widest bg-parchment border-l-4 border-almond-silk">Профиль</button>
+            <button class="w-full px-8 py-4 text-left text-xs font-bold uppercase tracking-widest text-tea-dark/40 hover:bg-parchment transition-all">Мои заказы</button>
+            <button class="w-full px-8 py-4 text-left text-xs font-bold uppercase tracking-widest text-tea-dark/40 hover:bg-parchment transition-all">Избранное</button>
+            <button id="profile-logout-btn" class="w-full px-8 py-4 text-left text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-50 transition-all">Выйти</button>
+          </nav>
+        </aside>
 
-      <!-- Секция 3: Безопасность -->
-      <section class="profile-section">
-        <h2 class="section-title">Безопасность</h2>
+        <!-- Main Content -->
+        <div class="lg:col-span-3 space-y-12">
+          <!-- Profile Form -->
+          <section class="bg-white border border-bone p-12">
+            <h3 class="text-3xl font-serif text-tea-dark mb-12">Личные данные</h3>
+            <form id="profile-form" class="max-w-xl space-y-8">
+              <div class="space-y-2">
+                <label class="text-[10px] uppercase tracking-widest font-bold text-tea-dark/40">Электронная почта</label>
+                <p id="user-email" class="text-lg font-medium text-tea-dark/60">—</p>
+              </div>
+              <div class="space-y-2">
+                <label for="full-name" class="text-[10px] uppercase tracking-widest font-bold text-tea-dark/40">Полное имя</label>
+                <input type="text" id="full-name" class="input-field w-full" placeholder="Ваше имя">
+              </div>
+              <button type="submit" class="btn-primary">Сохранить изменения</button>
+              <p id="profile-status" class="text-sm mt-4" style="display: none;"></p>
+            </form>
+          </section>
 
-        <form id="password-form" novalidate>
-          <div class="form-group">
-            <label for="new-password">Новый пароль</label>
-            <input type="password" id="new-password" name="new_password"
-                   placeholder="Минимум 6 символов" autocomplete="new-password">
-          </div>
-          <div class="form-group">
-            <label for="new-password-confirm">Подтверждение пароля</label>
-            <input type="password" id="new-password-confirm"
-                   placeholder="Повторите пароль" autocomplete="new-password">
-          </div>
-          <p id="password-status" class="status-msg"></p>
-          <button type="submit">Сменить пароль</button>
-        </form>
-      </section>
-    </div>
-  </main>
+          <!-- Password Form -->
+          <section class="bg-white border border-bone p-12">
+            <h3 class="text-3xl font-serif text-tea-dark mb-12">Безопасность</h3>
+            <form id="password-form" class="max-w-xl space-y-8">
+              <div class="space-y-2">
+                <label for="new-password" class="text-[10px] uppercase tracking-widest font-bold text-tea-dark/40">Новый пароль</label>
+                <input type="password" id="new-password" class="input-field w-full" placeholder="Минимум 6 символов">
+              </div>
+              <div class="space-y-2">
+                <label for="new-password-confirm" class="text-[10px] uppercase tracking-widest font-bold text-tea-dark/40">Подтвердите пароль</label>
+                <input type="password" id="new-password-confirm" class="input-field w-full" placeholder="Повторите пароль">
+              </div>
+              <button type="submit" class="btn-primary">Обновить пароль</button>
+              <p id="password-status" class="text-sm mt-4" style="display: none;"></p>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
 
-</body>
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+    <script type="module" src="/src/js/main.js"></script>
+    <script type="module" src="/src/js/auth/profile.js"></script>
+  </body>
 </html>

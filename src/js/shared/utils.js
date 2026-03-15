@@ -90,3 +90,20 @@ export function getErrorMessage(error, context = '') {
   // Fallback для всех остальных случаев
   return 'Произошла ошибка. Попробуйте позже';
 }
+
+/**
+ * Экранирует HTML-спецсимволы для безопасной вставки через innerHTML.
+ * Предотвращает XSS-атаки при отображении пользовательских данных.
+ *
+ * @param {string} str — исходная строка
+ * @returns {string} — безопасная строка с экранированными символами
+ */
+export function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}

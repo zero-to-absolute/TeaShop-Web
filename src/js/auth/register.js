@@ -1,7 +1,6 @@
 // register.js — Логика страницы регистрации
 // Обрабатывает форму регистрации, валидацию, вызов Supabase Auth и редирект.
 
-import '../shared/header.js';
 import { supabase } from '../shared/supabase.js';
 import { getCurrentUser } from './auth-state.js';
 
@@ -12,7 +11,7 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const passwordConfirmInput = document.getElementById('password-confirm');
 const errorMessage = document.getElementById('error-message');
-const submitButton = registerForm.querySelector('button[type="submit"]');
+const submitButton = document.getElementById('submit-btn');
 
 // --- Вспомогательные функции ---
 
@@ -23,7 +22,7 @@ const submitButton = registerForm.querySelector('button[type="submit"]');
  */
 function showError(message) {
   errorMessage.textContent = message;
-  errorMessage.style.display = 'block';
+  errorMessage.classList.remove('hidden');
 }
 
 /**
@@ -31,7 +30,7 @@ function showError(message) {
  */
 function hideError() {
   errorMessage.textContent = '';
-  errorMessage.style.display = 'none';
+  errorMessage.classList.add('hidden');
 }
 
 // --- Обработчик отправки формы ---
@@ -90,7 +89,7 @@ async function handleRegister(event) {
     }
 
     // Успешная регистрация — перенаправляем на главную
-    window.location.href = 'index.html';
+    window.location.href = '/';
   } catch (err) {
     console.error('Непредвиденная ошибка при регистрации:', err);
     showError('Произошла непредвиденная ошибка. Попробуйте позже.');
@@ -110,7 +109,7 @@ async function init() {
 
     if (user) {
       // Пользователь уже авторизован — редирект на главную
-      window.location.href = 'index.html';
+      window.location.href = '/';
       return;
     }
   } catch (err) {

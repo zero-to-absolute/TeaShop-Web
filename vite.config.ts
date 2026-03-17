@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 
 export default defineConfig({
+  base: '/TeaShop-Web/',
   plugins: [tailwindcss()],
   server: {
     port: 3000,

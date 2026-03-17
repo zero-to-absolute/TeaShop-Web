@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) {
     // Редирект на страницу входа с обратной ссылкой
     window.location.href =
-      '/src/pages/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+      import.meta.env.BASE_URL + 'src/pages/login.html?redirect=' + encodeURIComponent(window.location.pathname);
     return;
   }
 
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       await logout();
-      window.location.href = '/';
+      window.location.href = import.meta.env.BASE_URL;
     });
   }
 });

@@ -278,11 +278,11 @@ function renderCards(teas) {
     const card = document.createElement('div');
     card.className = 'bg-white p-8 border border-bone group cursor-pointer hover:-translate-y-2 transition-all duration-500 shadow-sm hover:shadow-xl relative';
     card.innerHTML = `
-      <div class="aspect-[4/5] bg-parchment mb-8 overflow-hidden relative">
+      <div class="mb-8 overflow-hidden relative">
         <img
           src="${escapeHtml(tea.image_url)}"
           alt="${escapeHtml(tea.name)}"
-          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+          class="w-full object-contain group-hover:scale-110 transition-transform duration-1000"
           onerror="this.style.display='none'"
         />
 
@@ -307,7 +307,6 @@ function renderCards(teas) {
             <span class="text-[10px] uppercase tracking-widest font-bold text-almond-silk mb-2 block">${escapeHtml(categoryName)}</span>
             <h4 class="text-2xl font-serif text-tea-dark group-hover:text-almond-silk transition-colors">${escapeHtml(tea.name)}</h4>
           </div>
-          <p class="text-lg font-serif text-tea-dark">${totalPrice}</p>
         </div>
 
         <p class="text-sm text-tea-dark/50 leading-relaxed line-clamp-2">
@@ -315,10 +314,7 @@ function renderCards(teas) {
         </p>
 
         <div class="pt-6 flex items-center justify-between border-t border-bone/50">
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-tea-dark/80">${formatPricePerGram(tea.price_per_gram)}</span>
-            <span class="text-[10px] uppercase tracking-widest text-tea-dark/40">за 1 грамм</span>
-          </div>
+          <p class="text-lg font-serif text-tea-dark">${totalPrice}</p>
           <button class="flex items-center gap-2 px-4 py-2 bg-tea-dark text-white text-[10px] font-bold uppercase tracking-widest hover:bg-almond-silk transition-all transform group-hover:scale-105">
             <i data-lucide="shopping-bag" size="14"></i>
             В корзину

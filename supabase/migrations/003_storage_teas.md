@@ -38,12 +38,9 @@ teas/
 └── rooibos-classic.jpg
 ```
 
-## Привязка к БД
-
-После загрузки файлов выполнить в SQL Editor (заменить `YOUR_PROJECT_ID`):
 
 ```sql
-UPDATE teas SET image_url = image_url || '?v=2' WHERE image_url IS NOT NULL;
+UPDATE teas SET image_url = image_url || '?v=2' WHERE image_url IS NOT NULL; Это у меня была проблема к кэш картинок
 ```
 
 Полный скрипт обновления `image_url` — в файле `003_update_image_urls.sql`.

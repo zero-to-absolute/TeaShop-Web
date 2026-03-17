@@ -101,7 +101,7 @@
 
 @media (min-width: 1024px) {
   #filter-sidebar {
-    width: 25%;
+    width: 17%;
     max-height: none;
     margin-bottom: 0;
     margin-right: 3rem; /* gap-12 */

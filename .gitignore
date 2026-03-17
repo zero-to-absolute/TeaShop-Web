@@ -1,6 +1,16 @@
 # Зависимости
 node_modules/
 
+# Внутренняя документация (не нужна на GitHub)
+docs/
+supabase/
+.claude/
+CLAUDE.md
+START_HERE.md
+WPF_DB_MERGE_ROADMAP.md
+teashop-engineering.md
+teashop_project_brief.md
+
 # Сборка
 dist/
 
